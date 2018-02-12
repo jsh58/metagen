@@ -49,3 +49,10 @@ md5sum -c nucl_gss.accession2taxid.gz.md5
 python updateTaxID2.py merged.dmp delnodes.dmp acc2taxid.txt \
   nucl_gb.accession2taxid.gz nucl_est.accession2taxid.gz \
   nucl_gss.accession2taxid.gz nucl_wgs.accession2taxid.gz
+
+# append adapters to db
+python copy1000.py adapters2.fa adapters2_1000.fa
+cat adapters2_1000.fa >> nt.fa
+cat nodes2.dmp >> nodes.dmp
+cat names2.dmp >> names.dmp
+cat acc2taxid2.txt >> acc2taxid.txt
