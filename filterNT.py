@@ -125,11 +125,11 @@ def main():
     minLen = int(args[2])
 
   # load headers of seqs to exclude
-  headers = []
+  headers = {}
   if len(args) > 3:
     fRead = openRead(args[3])
     for line in fRead:
-      headers.append(line.rstrip())
+      headers[line.rstrip()] = 1
 
   # parse fasta
   count, short, pureNs, xReads, total \
