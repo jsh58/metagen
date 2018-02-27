@@ -83,7 +83,7 @@ def parseFasta(fIn, fOut, minLen, headers):
       # save sequence
       read += line
       length += len(line) - 1
-      if line.rstrip() != 'N' * (len(line) - 1):
+      if nseq and line.rstrip() != 'N' * (len(line) - 1):
         nseq = False
 
   if fIn != sys.stdin:
@@ -125,11 +125,11 @@ def main():
     minLen = int(args[2])
 
   # load headers of seqs to exclude
-  headers = []
+  headers = {}
   if len(args) > 3:
     fRead = openRead(args[3])
     for line in fRead:
-      headers.append(line.rstrip())
+      headers[line.rstrip()] = 1
 
   # parse fasta
   count, short, pureNs, xReads, total \
@@ -138,7 +138,8 @@ def main():
   sys.stderr.write('Total fasta sequences in %s: %d\n' % (args[0], count))
   sys.stderr.write('  Shorter than %dbp: %d\n' % (minLen, short))
   sys.stderr.write('  Pure Ns: %d\n' % pureNs)
-  sys.stderr.write('  Excluded: %d\n' % xReads)
+  if len(args) > 3:
+    sys.stderr.write('  Excluded: %d\n' % xReads)
   sys.stderr.write('  Written to %s: %d\n' % (args[1], total))
 
 if __name__ == '__main__':
