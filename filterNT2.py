@@ -52,6 +52,7 @@ def loadBed(filename):
   d = {}
   f = openRead(filename)
   for line in f:
+    if line[0] == '#': continue
     spl = line.rstrip().split('\t')
     if len(spl) < 3:
       sys.stderr.write('Error! Improperly formatted BED record:\n' + line)

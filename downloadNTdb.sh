@@ -13,11 +13,12 @@ wget -q ftp://ftp.ncbi.nih.gov/blast/db/FASTA/nt.gz
 wget -q ftp://ftp.ncbi.nih.gov/blast/db/FASTA/nt.gz.md5
 md5sum -c nt.gz.md5
 
-# filter out sequences that are pure Ns or shorter than 30bp
-if [ -f contSeqs.txt ]; then
-  cont="contSeqs.txt"
+# filter out sequences that are pure Ns or shorter than 30bp;
+#   mask subsequences that match adapters
+if [ -f adapters2.bed ]; then
+  mask="adapters2.bed"
 fi
-python filterNT.py nt.gz nt.fa 30 $cont
+python filterNT2.py nt.gz nt.fa 30 $mask
 
 # download taxonomy files, check md5
 rm -f taxdump.tar.gz taxdump.tar.gz.md5 nodes.dmp names.dmp merged.dmp delnodes.dmp
@@ -54,9 +55,9 @@ python updateTaxID2.py merged.dmp delnodes.dmp acc2taxid.txt \
   nucl_gss.accession2taxid.gz nucl_wgs.accession2taxid.gz
 
 # append adapters to db
-if [ -f adapters2.fa ]; then
-  cat adapters2.fa >> nt.fa
-  cat nodes2.dmp >> nodes.dmp
-  cat names2.dmp >> names.dmp
-  cat acc2taxid2.txt >> acc2taxid.txt
-fi
+#if [ -f adapters2.fa ]; then
+#  cat adapters2.fa >> nt.fa
+#  cat nodes2.dmp >> nodes.dmp
+#  cat names2.dmp >> names.dmp
+#  cat acc2taxid2.txt >> acc2taxid.txt
+#fi
