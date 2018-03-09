@@ -52,13 +52,13 @@ if [ ! -f $tree ]; then
 fi
 
 # determine versions of centrifuge, nt
-base=$(dirname `which centrifuge`)
+base=$(dirname $(which centrifuge))
 if [ -f $base/VERSION ]; then
-  version=`cat $base/VERSION`
+  version=$(cat $base/VERSION)
 fi
 base2=$(dirname $idx)
 if [ -f $base2/DATE ]; then
-  date=`cat $base2/DATE`
+  date=$(cat $base2/DATE)
 fi
 
 # select top 20 hits
