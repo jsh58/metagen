@@ -69,7 +69,7 @@ def parseFasta(fIn, fOut, minLen, mask, headers):
   '''
   Parse fasta file, write output on the fly.
   '''
-  count = short = pureNs = xReads = total = 0
+  count = short = pureNs = xReads = masked = maskedBP = total = 0
   head = ''    # header (1st space-delim token)
   read = ''    # full read (header + sequence)
   nseq = True  # sequence is pure Ns
@@ -102,6 +102,7 @@ def parseFasta(fIn, fOut, minLen, mask, headers):
         for m in mask[head]:
           inter += range(m[0], m[1])
         inter.sort()
+        masked += 1
       length = 0
       nseq = True
 
@@ -110,6 +111,7 @@ def parseFasta(fIn, fOut, minLen, mask, headers):
       while inter and length <= inter[0] < length + len(line) - 1:
         line = line[:inter[0]-length] + 'N' + line[inter[0]-length+1:]
         del[inter[0]]
+        maskedBP += 1
 
       # save sequence
       read += line
@@ -136,7 +138,7 @@ def parseFasta(fIn, fOut, minLen, mask, headers):
   if fOut != sys.stdout:
     fOut.close()
 
-  return count, short, pureNs, xReads, total
+  return count, short, pureNs, xReads, masked, maskedBP, total
 
 def main():
   '''Main.'''
@@ -168,7 +170,7 @@ def main():
       headers[line.rstrip()] = 1
 
   # parse fasta
-  count, short, pureNs, xReads, total \
+  count, short, pureNs, xReads, masked, maskedBP, total \
     = parseFasta(fIn, fOut, minLen, mask, headers)
 
   sys.stderr.write('Total fasta sequences in %s: %d\n' % (args[0], count))
@@ -176,6 +178,9 @@ def main():
   sys.stderr.write('  Pure Ns: %d\n' % pureNs)
   if len(args) > 4:
     sys.stderr.write('  Excluded: %d\n' % xReads)
+  if len(args) > 3:
+    sys.stderr.write('  Masked sequences (length): %d (%dbp)\n' \
+      % (masked, maskedBP))
   sys.stderr.write('  Written to %s: %d\n' % (args[1], total))
 
 if __name__ == '__main__':
