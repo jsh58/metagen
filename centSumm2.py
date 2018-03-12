@@ -71,18 +71,18 @@ def printFooter(f, num, version, date):
   if date:
     f.write(' (downloaded %s)' % date)
   f.write('.</p>\n')
-  f.write('''<p>The value for a given taxon is the percent of all the
-  sequence reads assigned to that taxon <strong>or</strong> any lower
-  node in its tree.</p>
-<h4>Caveats:</h4>
+  f.write('''<h4>Caveats:</h4>
 <ul>
-  <li>Some sequences in the nt database are contaminated. For example,
-    reads with untrimmed Illumina adapters may be assigned to sundry taxa
-    (e.g. <strong><i>Cyprinus carpio</i></strong> [in class Actinopteri],
-    <strong><i>Eimeria mitis</i></strong> [in phylum Apicomplexa],
-    <strong><i>Ralstonia solanacearum</i></strong> [in class
-    Betaproteobacteria]) because of the contaminating adapter
-    sequences.</li>
+  <li>The value for a given taxon is the percent of all the sequence reads
+    assigned to that taxon <strong>or</strong> any lower node in its tree.</li>
+  <p>
+  <li>The nt database was edited prior to querying:
+    <ol>
+      <li>short sequences (<30bp) were removed</li>
+      <li>subsequences matching common Illumina adapters (Nextera, TruSeq)
+        were masked</li>
+    </ol>
+  </li>
   <p>
   <li>Reads derived from one organism may align equally well to other
     related organisms, especially those well-represented in the nt database.
@@ -90,6 +90,10 @@ def printFooter(f, num, version, date):
     may align to <i>Pan</i> or even <i>Mus</i>. Reads that map to multiple
     taxa are counted as a fractional portion to each taxon, rather than to
     the lowest common ancestor (LCA).</li>
+  <p>
+  <li>Some sequences in the nt database are mislabeled, and some are
+    contaminated with miscellaneous DNA (e.g. vectors). Reads that match
+    such sequences may be erroneously assigned.</li>
   <p>
   <li>The "unclassified" category includes both reads that did not match
     anything in the nt database, plus those that matched a sequence with
@@ -103,7 +107,8 @@ def printFooter(f, num, version, date):
     corresponding to a specific taxonomic level.</li>
 </ul>
 <p>Questions/concerns/comments/suggestions?
-<a href="mailto:jgaspar@fas.harvard.edu">Please let us know.</a></p>
+<a href="mailto:jgaspar@fas.harvard.edu">Please let us know.</a>
+</p>
 ''')
 
 def printLevel(f, n, level, cutoff):
