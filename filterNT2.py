@@ -47,9 +47,8 @@ def openWrite(filename):
     sys.exit(-1)
   return f
 
-def loadBed(filename):
+def loadBed(filename, d):
   '''Load BED regions to dict.'''
-  d = {}
   f = openRead(filename)
   for line in f:
     if line[0] == '#': continue
@@ -63,7 +62,6 @@ def loadBed(filename):
       d[spl[0]].append((int(spl[1]), int(spl[2])))
   if f != sys.stdin:
     f.close()
-  return d
 
 def parseFasta(fIn, fOut, minLen, mask, headers):
   '''
@@ -159,8 +157,9 @@ def main():
     minLen = int(args[2])
 
   # load BED regions
+  mask = {}
   if len(args) > 3:
-    mask = loadBed(args[3])
+    loadBed(args[3], mask)
 
   # load headers of seqs to exclude
   headers = {}
