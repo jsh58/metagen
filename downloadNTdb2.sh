@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
-#SBATCH -p general
+#SBATCH -p general,bos-info
 #SBATCH -N 1
 #SBATCH -n 1
-#SBATCH --mem 10000
+#SBATCH --mem 24000
 #SBATCH -t 3-00:00
 
 module load blast
@@ -25,7 +25,7 @@ md5sum -c nt.gz.md5
 
 # filter out sequences that are pure Ns or shorter than 30bp;
 #   mask subsequences that match adapters (adapters2.bed)
-if [[ $# -lt 1 && -f adapters2.bed ]]; then
+if [[ $# -eq 0 && -f adapters2.bed ]]; then
   mask="adapters2.bed"
 fi
 python filterNT2.py nt.gz nt.fa 30 $mask
@@ -35,6 +35,7 @@ if [[ $# -gt 0 && -f $1 ]]; then
   rm -f ${1%.*}.blast ${1%.*}.bed
 
   # create blast db
+  rm -f nt.nal nt.*.nhr nt.*.nin nt.*.nsq
   makeblastdb \
     -dbtype nucl \
     -in nt.fa \
@@ -46,6 +47,7 @@ if [[ $# -gt 0 && -f $1 ]]; then
     -query $1 \
     -db nt \
     -word_size 18 -ungapped \
+    -evalue 20 \
     -max_target_seqs 10000 \
     -out ${1%.*}.blast \
     -outfmt 6

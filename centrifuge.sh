@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-#SBATCH -p bigmem
+#SBATCH -p bigmem,bos-info
 #SBATCH -N 1
 #SBATCH -n 9
 #SBATCH --mem 392000
@@ -15,8 +15,8 @@ cent_insp=centrifuge-inspect
 idx=nt
 
 if [ $# -lt 3 ]; then
-  echo 'Usage: bash centrifuge.sh  <R1>  <R2>  <out>'
-  echo '   OR: bash centrifuge.sh  <R1>  None  <out>  # for SE'
+  echo 'Usage: bash -e centrifuge.sh  <R1>  <R2>  <out>'
+  echo '   OR: bash -e centrifuge.sh  <R1>  None  <out>  # for SE'
   exit -1
 fi
 
