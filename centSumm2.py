@@ -73,16 +73,12 @@ def printFooter(f, num, version, date):
   f.write('.</p>\n')
   f.write('''<h4>Caveats:</h4>
 <ul>
+  <li>The "unclassified" category includes both reads that did not match
+    anything in the nt database, plus those that matched a sequence with
+    an unspecified or unknown taxonomy.</li>
+  <p>
   <li>The value for a given taxon is the percent of all the sequence reads
     assigned to that taxon <strong>or</strong> any lower node in its tree.</li>
-  <p>
-  <li>The nt database was edited prior to querying:
-    <ol>
-      <li>short sequences (<30bp) were removed</li>
-      <li>subsequences matching common Illumina adapters (Nextera, TruSeq)
-        were masked</li>
-    </ol>
-  </li>
   <p>
   <li>Reads derived from one organism may align equally well to other
     related organisms, especially those well-represented in the nt database.
@@ -95,16 +91,20 @@ def printFooter(f, num, version, date):
     contaminated with miscellaneous DNA (e.g. vectors). Reads that match
     such sequences may be erroneously assigned.</li>
   <p>
-  <li>The "unclassified" category includes both reads that did not match
-    anything in the nt database, plus those that matched a sequence with
-    an unspecified or unknown taxonomy.</li>
-  <p>
   <li>The depiction of the results above is based on the major levels
-    (DKPCOFGS) in the NCBI's
+    (DKPCOFGS) in the NCBI
     <a href="https://www.ncbi.nlm.nih.gov/taxonomy">taxonomy</a>
     tree. Some branches in that tree skip a major level; hence, the
     columns in the above table should not be interpreted as
     corresponding to a specific taxonomic level.</li>
+  <p>
+  <li>The nt database was edited prior to querying:
+    <ol>
+      <li>short sequences (<30bp) were removed</li>
+      <li>subsequences matching common Illumina adapters (Nextera, TruSeq)
+        were masked</li>
+    </ol>
+  </li>
 </ul>
 <p>Questions/concerns/comments/suggestions?
 <a href="mailto:jgaspar@fas.harvard.edu">Please let us know.</a>
