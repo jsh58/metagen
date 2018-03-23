@@ -14,7 +14,7 @@ md5sum -c taxdump.tar.gz.md5
 tar xzf taxdump.tar.gz  # creates many files, including 'nodes.dmp' and 'names.dmp' (required by centrifuge-build)
                         #   and 'merged.dmp' and 'delnodes.dmp' (required by updateTaxID2.py)
 
-# download accession-to-taxID files (4), check md5s
+# download accession-to-taxID files, check md5s
 rm -f nucl_gb.accession2taxid.gz nucl_gb.accession2taxid.gz.md5
 wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gb.accession2taxid.gz
 wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gb.accession2taxid.gz.md5
@@ -25,17 +25,21 @@ wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_wgs.accession2t
 wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_wgs.accession2taxid.gz.md5
 md5sum -c nucl_wgs.accession2taxid.gz.md5
 
-rm -f nucl_est.accession2taxid.gz nucl_est.accession2taxid.gz.md5
-wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_est.accession2taxid.gz
-wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_est.accession2taxid.gz.md5
-md5sum -c nucl_est.accession2taxid.gz.md5
+#rm -f nucl_est.accession2taxid.gz nucl_est.accession2taxid.gz.md5
+#wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_est.accession2taxid.gz
+#wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_est.accession2taxid.gz.md5
+#md5sum -c nucl_est.accession2taxid.gz.md5
 
-rm -f nucl_gss.accession2taxid.gz nucl_gss.accession2taxid.gz.md5
-wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gss.accession2taxid.gz
-wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gss.accession2taxid.gz.md5
-md5sum -c nucl_gss.accession2taxid.gz.md5
+#rm -f nucl_gss.accession2taxid.gz nucl_gss.accession2taxid.gz.md5
+#wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gss.accession2taxid.gz
+#wget -q ftp://ftp.ncbi.nih.gov/pub/taxonomy/accession2taxid/nucl_gss.accession2taxid.gz.md5
+#md5sum -c nucl_gss.accession2taxid.gz.md5
 
 # update merged and deleted taxIDs from accession2taxid files, and then combine them
-python updateTaxID2.py merged.dmp delnodes.dmp acc2taxid.txt \
-  nucl_gb.accession2taxid.gz nucl_est.accession2taxid.gz \
-  nucl_gss.accession2taxid.gz nucl_wgs.accession2taxid.gz
+python updateTaxID2.py \
+  merged.dmp delnodes.dmp \
+  acc2taxid.txt \
+  nucl_gb.accession2taxid.gz \
+  nucl_wgs.accession2taxid.gz
+#  nucl_est.accession2taxid.gz \
+#  nucl_gss.accession2taxid.gz
