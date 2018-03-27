@@ -63,5 +63,5 @@ fi
 
 # select top 20 hits
 python centSumm2.py \
-  "$3.raw"  $tree  "$3"  20  $version  $date
+  "$3.raw"  $tree  "$3"  20  $version  "$date"
 echo 'Output file: '$3

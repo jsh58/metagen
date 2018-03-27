@@ -11,10 +11,10 @@ module load bedtools2
 
 # usage (two options):
 # - download nt; filter; mask regions in adapters2.bed:
-#   $ bash downloadNTdb.sh
+#   $ bash downloadNTdb2.sh
 # - download nt; filter; blast given <fasta> against nt;
 #   create bed regions of matches; mask those regions:
-#   $ bash downloadNTdb.sh  <fasta>
+#   $ bash downloadNTdb2.sh  <fasta>
 
 # download nt database, check md5
 rm -f nt.gz nt.gz.md5
@@ -47,7 +47,7 @@ if [[ $# -gt 0 && -f $1 ]]; then
     -query $1 \
     -db nt \
     -word_size 18 -ungapped \
-    -evalue 20 \
+    -evalue 250 \
     -max_target_seqs 10000 \
     -out ${1%.*}.blast \
     -outfmt 6
