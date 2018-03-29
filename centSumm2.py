@@ -88,8 +88,11 @@ def printFooter(f, num, version, date):
     the lowest common ancestor (LCA).</li>
   <p>
   <li>Some sequences in the nt database are mislabeled, and some are
-    contaminated with miscellaneous DNA (e.g. vectors). Reads that match
-    such sequences may be erroneously assigned.</li>
+    contaminated with miscellaneous DNA (e.g. vectors). Reads may be erroneously
+    assigned to sundry taxa (e.g. <strong><i>Cyprinus carpio</i></strong> [in
+    class Actinopteri] and <strong><i>Ralstonia solanacearum</i></strong> [in
+    class Betaproteobacteria] are frequently observed) due to matching
+    contaminated reference sequences.</li>
   <p>
   <li>The depiction of the results above is based on the major levels
     (DKPCOFGS) in the NCBI
