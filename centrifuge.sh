@@ -40,6 +40,7 @@ $cent \
   --report-file /dev/null \
   | $cent_kr \
   -x $idx \
+  --no-lca \
   > "$3.raw"
 
 # produce taxonomy tree (if necessary)
