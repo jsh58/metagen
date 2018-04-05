@@ -147,6 +147,14 @@ def printOutput(f, unclass, root, num, cutoff, version, date):
     + '    <td>unclassified</td>\n' \
     + '  </tr>\n')
 
+  # rearrange children of root
+  node = []
+  for i in range(len(root.child))[::-1]:
+    if root.child[i].taxon in ['12908', '28384']:
+      node.append(root.child.pop(i))
+  for n in node[::-1]:
+    root.child.append(n)
+
   # print tree
   for n in root.child:
     printLevel(f, n, 0, cutoff)
