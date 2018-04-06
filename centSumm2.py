@@ -106,6 +106,7 @@ def printFooter(f, num, version, date):
       <li>short sequences (<30bp) were removed</li>
       <li>subsequences matching common Illumina adapters (Nextera, TruSeq)
         were masked</li>
+      <li>Illumina adapter sequences (Nextera, TruSeq) were appended</li>
     </ol>
   </li>
 </ul>
