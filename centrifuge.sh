@@ -37,6 +37,7 @@ $cent \
   -p8 \
   -x $idx \
   $reads \
+  --no-abundance \
   --report-file /dev/null \
   | $cent_kr \
   -x $idx \
