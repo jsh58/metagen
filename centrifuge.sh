@@ -12,7 +12,7 @@ cent=centrifuge
 cent_kr=centrifuge-kreport
 cent_insp=centrifuge-inspect
 
-idx=nt
+idx=/n/regal/informatics_public/metagen/nt
 
 if [ $# -lt 3 ]; then
   echo 'Usage: bash -e centrifuge.sh  <R1>  <R2>  <out>'
@@ -64,6 +64,6 @@ if [ -f $base2/DATE ]; then
 fi
 
 # select top 20 hits
-python centSumm2.py \
+python /n/regal/informatics_public/metagen/centSumm2.py \
   "$3.raw"  $tree  "$3"  20  $version  "$date"
 echo 'Output file: '$3
