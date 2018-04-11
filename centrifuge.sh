@@ -1,16 +1,12 @@
 #!/bin/bash -e
 
-#SBATCH -p bigmem,bos-info
+#SBATCH -p bos-info,general
 #SBATCH -N 1
 #SBATCH -n 9
-#SBATCH --mem 392000
+#SBATCH --mem 196000
 #SBATCH -t 1-00:00
 
 module load centrifuge
-
-cent=centrifuge
-cent_kr=centrifuge-kreport
-cent_insp=centrifuge-inspect
 
 idx=/n/regal/informatics_public/metagen/nt
 
@@ -33,13 +29,13 @@ else
 fi
 
 # classify reads
-$cent \
+centrifuge \
   -p8 \
   -x $idx \
   $reads \
   --no-abundance \
   --report-file /dev/null \
-  | $cent_kr \
+  | centrifuge-kreport \
   -x $idx \
   --no-lca \
   > "$3.raw"
@@ -47,7 +43,7 @@ $cent \
 # produce taxonomy tree (if necessary)
 tree=$idx.tree
 if [ ! -f $tree ]; then
-  $cent_insp \
+  centrifuge-inspect \
     --taxonomy-tree \
     $idx \
     > $tree
