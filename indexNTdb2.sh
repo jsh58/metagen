@@ -2,7 +2,7 @@
 
 #SBATCH -p bigmem,bos-info
 #SBATCH -N 1
-#SBATCH -n 20
+#SBATCH -n 8
 #SBATCH --mem 500000
 #SBATCH -t 3-00:00
 
@@ -17,7 +17,7 @@ cat acc2taxid2.txt >> acc2taxid.txt
 # index database
 db=nt.fa
 pre=nt
-rm -f $pre.1.cf $pre.2.cf $pre.3.cf $pre.4.cf
+rm -f $pre.1.cf $pre.2.cf $pre.3.cf $pre.4.cf $pre.tree
 centrifuge-build \
   -p4 \
   --conversion-table acc2taxid.txt \
@@ -26,3 +26,9 @@ centrifuge-build \
   $db \
   $pre \
   &> log2.txt
+
+# produce taxonomy tree
+centrifuge-inspect \
+  --taxonomy-tree \
+  $pre \
+  > $pre.tree
