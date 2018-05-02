@@ -62,6 +62,7 @@ for f in /n/seqcfs/sequencing/analysis_finished/$fol/$lane.*/Fastq/*R1.fastq.gz;
   done
 
   # run centrifuge
-  bash -e centrifuge.sh $f $f2 $fol/$base.html
+  bash -e /n/regal/informatics_public/metagen/centrifuge.sh \
+    $f $f2 $fol/$base.html
 
 done
