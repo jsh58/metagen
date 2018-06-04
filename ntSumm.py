@@ -43,12 +43,13 @@ def openWrite(filename):
 
 class Node:
   '''
-  Node: contains parent node,
+  Node: contains parent node, taxonomic rank,
     count (number of sequences in nt), and
     length (length of sequences in nt).
   '''
-  def __init__(self, parent, count = 0, length = 0):
+  def __init__(self, parent, rank, count = 0, length = 0):
     self.parent = parent
+    self.rank = rank
     self.count = count
     self.length = length
 
@@ -58,7 +59,7 @@ def printOutput(f, d):
   '''
   for n in sorted(d, key=int):
     f.write('\t|\t'.join(map(str, [n, d[n].parent,
-      d[n].count, d[n].length])) + '\n')
+      d[n].rank, d[n].count, d[n].length])) + '\n')
 
 def addCount(length, node, d):
   '''
@@ -114,10 +115,10 @@ def loadTax(f):
       sys.exit(-1)
     base = spl[0].strip()
     if base == '1':
-      d[base] = Node(None)
+      d[base] = Node(None, spl[2].strip())
     else:
-      d[base] = Node(spl[1].strip())
-  d['0'] = Node(None)  # node for seqs with unassigned taxonomy
+      d[base] = Node(spl[1].strip(), spl[2].strip())
+  d['0'] = Node(None, 'no rank')  # node for seqs with unassigned taxonomy
   return d
 
 def loadAcc(f):

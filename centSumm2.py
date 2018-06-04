@@ -285,6 +285,7 @@ def loadTax(f):
   # save canonical parent taxa to dict
   d = {}
   for taxon in temp:
+    if taxon == '1': continue  # skip root (parent is 'None')
     if temp[taxon][1]:
       parent = findParent(temp, taxon)
       if parent:
