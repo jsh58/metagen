@@ -67,6 +67,7 @@ print STDERR "Loading taxonomy ...\n";
 load_taxonomy();
 
 my %taxo_counts;
+my %seqid_counts;
 my $seq_count = 0;
 $taxo_counts{0} = 0;
 if ($is_cnts_table) {
@@ -79,9 +80,8 @@ if ($is_cnts_table) {
   chomp(my $header = <>);
   my @cols = split /\t/, $header ;
   my %headerMap ;
-  for ( my $i = 0 ; $i < scalar( @cols ) ; ++$i )
-  {
-  	$headerMap{ $cols[$i] } = $i ;
+  for ( my $i = 0 ; $i < scalar( @cols ) ; ++$i ) {
+    $headerMap{ $cols[$i] } = $i ;
   }
 
   my $prevReadID;
@@ -101,6 +101,7 @@ if ($is_cnts_table) {
       next if defined $min_length && $hitLength < $min_length;
       next if defined $min_score && $score < $min_score;
       $taxo_counts{$taxID} += 1/$numMatches;
+      $seqid_counts{$taxID}{$seqID} += 1/$numMatches if ($seqID =~ /^[A-Z]/);
       $seq_count += 1/$numMatches;
     } else {
       if ( ( defined $prevReadID ) && ( $readID eq $prevReadID ) ) {
@@ -119,6 +120,7 @@ if ($is_cnts_table) {
 my $classified_count = $seq_count - $taxo_counts{0};
 
 my %clade_counts = %taxo_counts;
+my %nt50;
 dfs_summation(1);
 
 for (keys %name_map) {
@@ -127,10 +129,10 @@ for (keys %name_map) {
 
 die "No sequence matches with given settings" unless $seq_count > 0;
 
-printf "%6.2f\t%d\t%d\t%s\t%d\t%s%s\n",
+printf "%6.2f\t%.0f\t%.0f\t%s\t%d\t%d\t%s%s\n",
   $clade_counts{0} * 100 / $seq_count,
   $clade_counts{0}, $taxo_counts{0}, "U",
-  0, "", "unclassified";
+  0, 0, "", "unclassified";
 dfs_report(1, 0);
 
 sub dfs_report {
@@ -139,12 +141,13 @@ sub dfs_report {
   if (! $clade_counts{$node} && ! $show_zeros) {
     return;
   }
-  printf "%6.2f\t%d\t%d\t%s\t%d\t%s%s\n",
+  printf "%6.2f\t%.0f\t%.0f\t%s\t%d\t%d\t%s%s\n",
     ($clade_counts{$node} || 0) * 100 / $seq_count,
     ($clade_counts{$node} || 0),
     ($taxo_counts{$node} || 0),
     rank_code($rank_map{$node}),
     $node,
+    $nt50{$node},
     "  " x $depth,
     $name_map{$node};
   my $children = $child_lists{$node};
@@ -200,13 +203,35 @@ sub rank_code {
 
 sub dfs_summation {
   my $node = shift;
-  my $children = $child_lists{$node};
-  if ($children) {
-    for my $child (@$children) {
-      dfs_summation($child);
-      $clade_counts{$node} += ($clade_counts{$child} || 0);
-    }
+  $nt50{$node} = calcNT50(%{$seqid_counts{$node}});
+  foreach my $child (@{$child_lists{$node}}) {
+    dfs_summation($child);
+    $clade_counts{$node} += ($clade_counts{$child} || 0);
+    $nt50{$node} += $nt50{$child};
   }
+}
+
+sub calcNT50 {
+  # count the number of seqs that account for >= 50%
+  #   of the assignments to a taxon
+  my %counts = @_;
+
+  # calculate half of total sum
+  my $total = 0;
+  foreach my $seqID (keys %counts) {
+    $total += $counts{$seqID};
+  }
+  $total /= 2;
+
+  # count seqs
+  my $subt = 0;
+  my $count = 0;
+  foreach my $seqID (sort {$counts{$b} <=> $counts{$a}} keys %counts) {
+    $count++;
+    $subt += $counts{$seqID};
+    last if ($subt >= $total);
+  }
+  return $count;
 }
 
 sub load_taxonomy {
