@@ -101,7 +101,8 @@ if ($is_cnts_table) {
       next if defined $min_length && $hitLength < $min_length;
       next if defined $min_score && $score < $min_score;
       $taxo_counts{$taxID} += 1/$numMatches;
-      $seqid_counts{$taxID}{$seqID} += 1/$numMatches if ($seqID =~ /^[A-Z]/);
+      $seqid_counts{$taxID}{$seqID} += 1/$numMatches;
+      #$seqid_counts{$taxID}{$seqID} += 1/$numMatches if ($seqID =~ /^[A-Z]/);
       $seq_count += 1/$numMatches;
     } else {
       if ( ( defined $prevReadID ) && ( $readID eq $prevReadID ) ) {
@@ -120,19 +121,20 @@ if ($is_cnts_table) {
 my $classified_count = $seq_count - $taxo_counts{0};
 
 my %clade_counts = %taxo_counts;
-my %nt50;
+my (%nt50, %clade_nt50);
 dfs_summation(1);
 
-for (keys %name_map) {
-  $clade_counts{$_} ||= 0;
-}
+#for (keys %name_map) {
+#  $clade_counts{$_} ||= 0;
+#  $clade_nt50{$_} ||= 0;
+#}
 
 die "No sequence matches with given settings" unless $seq_count > 0;
 
-printf "%6.2f\t%.0f\t%.0f\t%s\t%d\t%d\t%s%s\n",
+printf "%6.2f\t%.0f\t%.0f\t%s\t%d\t%d\t%d\t%s%s\n",
   $clade_counts{0} * 100 / $seq_count,
   $clade_counts{0}, $taxo_counts{0}, "U",
-  0, 0, "", "unclassified";
+  0, 0, 0, "", "unclassified";
 dfs_report(1, 0);
 
 sub dfs_report {
@@ -141,13 +143,14 @@ sub dfs_report {
   if (! $clade_counts{$node} && ! $show_zeros) {
     return;
   }
-  printf "%6.2f\t%.0f\t%.0f\t%s\t%d\t%d\t%s%s\n",
+  printf "%6.2f\t%.0f\t%.0f\t%s\t%d\t%d\t%d\t%s%s\n",
     ($clade_counts{$node} || 0) * 100 / $seq_count,
     ($clade_counts{$node} || 0),
     ($taxo_counts{$node} || 0),
     rank_code($rank_map{$node}),
     $node,
-    $nt50{$node},
+    $is_cnts_table || ! $no_lca ? 0 : $clade_nt50{$node},
+    $is_cnts_table || ! $no_lca ? 0 : $nt50{$node},
     "  " x $depth,
     $name_map{$node};
   my $children = $child_lists{$node};
@@ -203,11 +206,37 @@ sub rank_code {
 
 sub dfs_summation {
   my $node = shift;
-  $nt50{$node} = calcNT50(%{$seqid_counts{$node}});
+
+  if (! exists $clade_counts{$node}) {
+    $clade_counts{$node} = 0;
+    $nt50{$node} = 0;
+  } elsif (! $is_cnts_table && $no_lca) {
+    # calculate nt50 for this node
+    $nt50{$node} = calcNT50(%{$seqid_counts{$node}});
+  }
+  $clade_nt50{$node} = 0;
+
+  # sum counts from children nodes
+  my %counts;  # local sum of counts
+  $counts{$node} = $clade_counts{$node};
   foreach my $child (@{$child_lists{$node}}) {
     dfs_summation($child);
-    $clade_counts{$node} += ($clade_counts{$child} || 0);
-    $nt50{$node} += $nt50{$child};
+    if (exists $clade_counts{$child}) {
+      $counts{$child} = $clade_counts{$child};
+      $clade_counts{$node} += $clade_counts{$child};
+    }
+  }
+  return if (! $clade_counts{$node});
+
+  # sum nt50s for nodes composing 50% of assignments
+  if (! $is_cnts_table && $no_lca) {
+    my $count = 0;
+    foreach my $child (sort {$counts{$b} <=> $counts{$a}} keys %counts) {
+      $clade_nt50{$node} += $child == $node ?
+        $nt50{$child} : $clade_nt50{$child};
+      $count += $counts{$child};
+      last if ($count >= $clade_counts{$node}/2);
+    }
   }
 }
 
@@ -227,7 +256,8 @@ sub calcNT50 {
   my $subt = 0;
   my $count = 0;
   foreach my $seqID (sort {$counts{$b} <=> $counts{$a}} keys %counts) {
-    $count++;
+    #$count++;
+    $count += $seqID =~ /^[A-Z]/ ? 1 : 5;  # count generic assignments as 5
     $subt += $counts{$seqID};
     last if ($subt >= $total);
   }
