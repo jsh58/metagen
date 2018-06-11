@@ -121,7 +121,7 @@ if ($is_cnts_table) {
 my $classified_count = $seq_count - $taxo_counts{0};
 
 my %clade_counts = %taxo_counts;
-my (%nt50, %clade_nt50);
+my (%nt90, %clade_nt90);
 dfs_summation(1);
 
 #for (keys %name_map) {
@@ -149,8 +149,8 @@ sub dfs_report {
     ($taxo_counts{$node} || 0),
     rank_code($rank_map{$node}),
     $node,
-    $is_cnts_table || ! $no_lca ? 0 : $clade_nt50{$node},
-    $is_cnts_table || ! $no_lca ? 0 : $nt50{$node},
+    $is_cnts_table || ! $no_lca ? 0 : $clade_nt90{$node},
+    $is_cnts_table || ! $no_lca ? 0 : $nt90{$node},
     "  " x $depth,
     $name_map{$node};
   my $children = $child_lists{$node};
@@ -209,12 +209,12 @@ sub dfs_summation {
 
   if (! exists $clade_counts{$node}) {
     $clade_counts{$node} = 0;
-    $nt50{$node} = 0;
+    $nt90{$node} = 0;
   } elsif (! $is_cnts_table && $no_lca) {
-    # calculate nt50 for this node
-    $nt50{$node} = calcNT50(%{$seqid_counts{$node}});
+    # calculate nt90 for this node
+    $nt90{$node} = calcNT90(%{$seqid_counts{$node}});
   }
-  $clade_nt50{$node} = 0;
+  $clade_nt90{$node} = 0;
 
   # sum counts from children nodes
   my %counts;  # local sum of counts
@@ -228,29 +228,29 @@ sub dfs_summation {
   }
   return if (! $clade_counts{$node});
 
-  # sum nt50s for nodes composing 50% of assignments
+  # sum nt90s for nodes composing 90% of assignments
   if (! $is_cnts_table && $no_lca) {
     my $count = 0;
     foreach my $child (sort {$counts{$b} <=> $counts{$a}} keys %counts) {
-      $clade_nt50{$node} += $child == $node ?
-        $nt50{$child} : $clade_nt50{$child};
+      $clade_nt90{$node} += $child == $node ?
+        $nt90{$child} : $clade_nt90{$child};
       $count += $counts{$child};
-      last if ($count >= $clade_counts{$node}/2);
+      last if ($count >= 0.9 * $clade_counts{$node});
     }
   }
 }
 
-sub calcNT50 {
-  # count the number of seqs that account for >= 50%
+sub calcNT90 {
+  # count the number of seqs that account for >= 90%
   #   of the assignments to a taxon
   my %counts = @_;
 
-  # calculate half of total sum
+  # calculate 90% of total sum
   my $total = 0;
   foreach my $seqID (keys %counts) {
     $total += $counts{$seqID};
   }
-  $total /= 2;
+  $total *= 0.9;
 
   # count seqs
   my $subt = 0;
