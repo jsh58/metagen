@@ -49,18 +49,18 @@ class Node:
     list of child nodes, parent node,
     score (percent of the sample),
     count (number of reads),
-    ntSeqs (number of seqs in nt with read assignments),
+    nt90 (number of seqs in nt accounting for 90% of read assignments),
     ntTotal (total number of seqs in nt for this taxon).
   '''
   def __init__(self, parent, name, taxon, score, count,
-      ntSeqs, ntTotal):
+      nt90, ntTotal):
     self.child = []
     self.parent = parent
     self.name = name
     self.taxon = taxon
     self.score = float(score)
     self.count = int(count)
-    self.ntSeqs = int(ntSeqs)
+    self.nt90 = int(nt90)
     self.ntTotal = int(ntTotal)
 
 def printFooter(f, num, version, date, count, length):
@@ -131,7 +131,7 @@ def printLevel(f, n, level, cutoff):
     f.write('  <tr>\n' \
       + '    <td align="right">%.2f&emsp;</td>\n' % n.score \
       + '    <td>%s%s</td>\n' % (level * 2 * '&emsp;', n.name) \
-      + '    <td align="right">%d</td>\n' % n.ntSeqs \
+      + '    <td align="right">%d</td>\n' % n.nt90 \
       + '    <td align="right">%d</td>\n' % n.ntTotal \
       + '  </tr>\n')
   for m in n.child:
@@ -151,7 +151,7 @@ def printOutput(f, unclass, root, num, cutoff, version, date,
   <tr>
     <th align="right" width=10%>Percent&emsp;</th>
     <th align="left">Taxon</th>
-    <th align="right">nt sequences with read assignments</th>
+    <th align="right">nt90*</th>
     <th align="right">Total nt sequences</th>
   </tr>
 ''')
@@ -251,7 +251,7 @@ def loadScores(f, d):
       continue
 
     # save to tree
-    name = spl[6].strip()
+    name = spl[7].strip()
     if spl[3] in 'GS':
       name = '<i>' + name + '</i>'  # italicize genus/species
     n = Node(parent, name, spl[4], spl[0], spl[1], spl[5],
