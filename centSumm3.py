@@ -4,10 +4,12 @@
 
 # Producing an html summary of the top 20 taxa from
 #   centrifuge's kraken-style report.
-# Version 3: include nt summary stats
+# Version 3: include nt counts, p-values, etc.
 
 import sys
 import gzip
+import math
+import scipy.stats
 
 def openRead(filename):
   '''
@@ -122,20 +124,63 @@ def printFooter(f, num, version, date, count, length):
 </p>
 ''')
 
-def printLevel(f, n, level, cutoff):
+def calcPval(count, n, p1, p2):
+  '''
+  Calculate 1-sample proportion p-value
+    (one-sided, testing p_hat > p0).
+  '''
+  p0 = p1 / float(p2)  # null p-value (based on nt counts)
+  p_hat = count / float(n)
+  div = math.sqrt( p0 * (1-p0) / n )
+  if div:
+    z = (p_hat - p0) / div
+  if not div or z > 100:
+    z = 100
+  return scipy.stats.norm.sf(z), p_hat
+
+def printLevel(f, n, level, cutoff, signif, nt90Bool):
   '''
   Print results for a node (if its count meets cutoff).
     Continue printing for children nodes (recursively).
   '''
   if n.count >= cutoff:  # or level == 0: # to include all children of root
+
+    # do not include significance/nt90 results for 'other' taxa
+    if n.taxon in ['12908', '28384']:
+      signif = False
+      nt90Bool = False
+
+    # determine significance (p-value < 0.05 or prop >= 0.9)
+    if level > 0 and signif:
+      pval, p_hat = calcPval(n.count, n.parent.count, \
+          n.ntTotal, n.parent.ntTotal)
+      if pval > 0.05 and p_hat < 0.9:
+        signif = False
+        sigRes = '    <td align="center" style="color:red">&#10008;</td>\n'
+      else:
+        sigRes = '    <td align="center" style="color:green">&#10003;</td>\n'
+    else:
+      sigRes = '    <td align="center">&#9472;</td>\n'
+
+    # add nt90 value
+    if not nt90Bool:
+      nt90 = '    <td align="center">&#9472;</td>\n'
+    elif n.nt90 < 5:
+      nt90 = '    <td align="center">&#10071;</td>\n'
+    else:
+      nt90 = '    <td></td>\n'
+
+    # write results
     f.write('  <tr>\n' \
       + '    <td align="right">%.2f&emsp;</td>\n' % n.score \
       + '    <td>%s%s</td>\n' % (level * 2 * '&emsp;', n.name) \
-      + '    <td align="right">%d</td>\n' % n.nt90 \
+      + sigRes \
+      + nt90 \
       + '    <td align="right">%d</td>\n' % n.ntTotal \
       + '  </tr>\n')
+
   for m in n.child:
-    printLevel(f, m, level + 1, cutoff)
+    printLevel(f, m, level + 1, cutoff, signif, nt90Bool)
 
 def printOutput(f, unclass, root, num, cutoff, version, date,
     count, length):
@@ -150,15 +195,17 @@ def printOutput(f, unclass, root, num, cutoff, version, date,
 <table style="width:100%;border:1px solid;">
   <tr>
     <th align="right" width=10%>Percent&emsp;</th>
-    <th align="left">Taxon</th>
-    <th align="right">nt90*</th>
+    <th align="left" width=55%>Taxon</th>
+    <th align="center">Enriched</th>
+    <th align="center">nt90*</th>
     <th align="right">Total nt sequences</th>
   </tr>
 ''')
   f.write('  <tr>\n' \
     + '    <td align="right">%.2f&emsp;</td>\n' % unclass[0] \
     + '    <td>unclassified</td>\n' \
-    + '    <td align="right">-</td>\n' \
+    + '    <td align="center">&#9472;</td>\n' \
+    + '    <td align="center">&#9472;</td>\n' \
     + '    <td align="right">%d</td>\n' % unclass[1] \
     + '  </tr>\n')
 
@@ -172,7 +219,7 @@ def printOutput(f, unclass, root, num, cutoff, version, date,
 
   # print tree
   for n in root.child:
-    printLevel(f, n, 0, cutoff)
+    printLevel(f, n, 0, cutoff, True, True)
   f.write('</table>\n')
 
   printFooter(f, num, version, date, count, length)
