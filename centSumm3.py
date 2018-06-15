@@ -337,7 +337,7 @@ def loadScores(f, d):
 
     # save to tree
     name = spl[7].strip()
-    if spl[3] in 'GS':
+    if spl[3] in 'GS' and name[0].isupper():
       name = '<i>' + name + '</i>'  # italicize genus/species
     n = Node(parent, name, spl[4], spl[0], spl[1], spl[5],
       d[spl[4]][1])
