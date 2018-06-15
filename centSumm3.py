@@ -2,9 +2,8 @@
 
 # JMG 1/2018
 
-# Producing an html summary of the top 20 taxa from
-#   centrifuge's kraken-style report.
-# Version 3: include nt counts, p-values, etc.
+# Producing an html summary of the top N taxa (def. 20)
+#   from centrifuge's kraken-style report.
 
 import sys
 import gzip
@@ -74,21 +73,61 @@ def printFooter(f, num, version, date, count, length):
     + 'Centrifuge</a>')
   if version:
     f.write(' (version %s)' % version)
-  f.write(', querying the NCBI ' \
-    + '<a href="https://www.ncbi.nlm.nih.gov/nucleotide">nt</a> database ' \
-    + 'of %d sequences spanning %.1fGbp' % (count, length/1.0e9))
+  f.write(',\n  querying the NCBI ' \
+    + '<a href="https://www.ncbi.nlm.nih.gov/nucleotide">nt</a>\n  database' \
+    + ' of %d sequences spanning %.1fGbp' % (count, length/1.0e9))
   if date:
     f.write(' (downloaded %s)' % date)
   f.write('.</p>\n')
-  f.write('''<h4>Caveats:</h4>
+  f.write('''<h4>Notes:</h4>
 <ul>
+  <li>The <strong>Percent</strong> value for a given taxon is the percent of
+    all the sequence reads assigned to that taxon <strong>or</strong> any lower
+    node in its tree.</li>
+  <p>
+  <li>The <strong>Enriched</strong> column provides information about the
+    relative abundance of each taxon:
+    <ul>
+      <li><font style="color:green">&#10003;</font> = enriched (either the
+        measured abundance is significantly more than expected, given the nt
+        representations of the taxon and its parent [<i>p</i>-value &le; 0.05],
+        <strong>or</strong> the taxon accounts for &ge; 90% of its parent's read
+        assignments)</li>
+      <li><font style="color:red">&#10008;</font> = not enriched (neither of the
+        above criteria is met)</li>
+      <li><font>&#9472;</font> = not measured (for taxa with an unenriched
+        ancestor node, as well as unclassified sequences, "other sequences"
+        [e.g. adapters], and top level taxa [e.g. Eukaryota])</li>
+    </ul>
+  </li>
+  <p>
+  <li>The <strong>nt90</strong> column indicates if the read assignments to the
+    given taxon are due to a limited number of nt sequences:
+    <ul>
+      <li><font>&#10071;</font> = <strong>warning!</strong> nt90 &lt; 5
+        (the nt90 value is the number of nt sequences that collectively account
+        for 90% of the read assignments to the taxon; for non-leaf nodes whose
+        direct read assignments do not reach this level, the given nt90 value is
+        the sum of the nt90 values for the subset of nodes [children and itself]
+        that do account for 90%; a generic assignment given by centrifuge
+        [e.g. "species"] is counted as 5 nt sequences; a low nt90 value may
+        indicate a mislabeled nt sequence or a dearth of nt sequences for this
+        taxon)</li>
+      <li><font>&#9472;</font> = not measured (for unclassified sequences and
+        "other sequences" [e.g. adapters])</li>
+    </ul>
+  </li>
+  <p>
+  <li>The <strong>Total nt sequences</strong> value is the number of
+    sequences in the nt database that are labeled with the given taxon
+    <strong>or</strong> any lower node in its tree.</li>
+  <p>
   <li>The "unclassified" category includes both reads that did not match
     anything in the nt database, plus those that matched a sequence with
     an unspecified or unknown taxonomy.</li>
-  <p>
-  <li>The value for a given taxon is the percent of all the sequence reads
-    assigned to that taxon <strong>or</strong> any lower node in its tree.</li>
-  <p>
+</ul>
+<h4>Caveats:</h4>
+<ul>
   <li>Reads derived from one organism may align equally well to other
     related organisms, especially those well-represented in the nt database.
     For example, reads from a sequencing run of a <i>Homo sapiens</i> sample
@@ -98,9 +137,8 @@ def printFooter(f, num, version, date, count, length):
   <p>
   <li>Some sequences in the nt database are mislabeled, and some are
     contaminated with miscellaneous DNA (e.g. vectors). Reads may be erroneously
-    assigned to sundry taxa (e.g. <strong><i>Cyprinus carpio</i></strong> [in
-    class Actinopteri] and <strong><i>Ralstonia solanacearum</i></strong> [in
-    class Betaproteobacteria] are frequently observed) due to matching
+    assigned to sundry taxa (e.g. <strong><i>Cyprinus carpio</i></strong>
+    [in class Actinopteri] is frequently observed) due to matching
     contaminated reference sequences.</li>
   <p>
   <li>The depiction of the results above is based on the major levels
@@ -150,7 +188,7 @@ def printLevel(f, n, level, cutoff, signif, nt90Bool):
       signif = False
       nt90Bool = False
 
-    # determine significance (p-value < 0.05 or prop >= 0.9)
+    # determine significance (p-value <= 0.05 or prop >= 0.9)
     if level > 0 and signif:
       pval, p_hat = calcPval(n.count, n.parent.count, \
           n.ntTotal, n.parent.ntTotal)
@@ -195,9 +233,9 @@ def printOutput(f, unclass, root, num, cutoff, version, date,
 <table style="width:100%;border:1px solid;">
   <tr>
     <th align="right" width=10%>Percent&emsp;</th>
-    <th align="left" width=55%>Taxon</th>
+    <th align="left" width=50%>Taxon</th>
     <th align="center">Enriched</th>
-    <th align="center">nt90*</th>
+    <th align="center">nt90</th>
     <th align="right">Total nt sequences</th>
   </tr>
 ''')
@@ -391,7 +429,7 @@ def main():
   if fIn != sys.stdin:
     fIn.close()
 
-  # find cutoff score for top n taxa
+  # find cutoff score for top N taxa
   num = 20
   if len(args) > 3:
     num = int(args[3])
