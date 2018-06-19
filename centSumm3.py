@@ -51,10 +51,11 @@ class Node:
     score (percent of the sample),
     count (number of reads),
     nt90 (number of seqs in nt accounting for 90% of read assignments),
-    ntTotal (total number of seqs in nt for this taxon).
+    ntTotal (total number of seqs in nt for this taxon),
+    ntLen (total length of seqs in nt).
   '''
   def __init__(self, parent, name, taxon, score, count,
-      nt90, ntTotal):
+      nt90, ntTotal, ntLen):
     self.child = []
     self.parent = parent
     self.name = name
@@ -63,6 +64,7 @@ class Node:
     self.count = int(count)
     self.nt90 = int(nt90)
     self.ntTotal = int(ntTotal)
+    self.ntLen = int(ntLen)
 
 def printFooter(f, num, version, date, count, length):
   '''
@@ -192,6 +194,9 @@ def printLevel(f, n, level, cutoff, signif, nt90Bool):
     if level > 0 and signif:
       pval, p_hat = calcPval(n.count, n.parent.count, \
           n.ntTotal, n.parent.ntTotal)
+          # null distribution based on number of nt sequences;
+          #   to use sequence lengths, specify n.ntLen and n.parent.ntLen
+          #   in above calcPval() call
       if pval > 0.05 and p_hat < 0.9:
         signif = False
         sigRes = '    <td align="center" style="color:red">&#10008;</td>\n'
@@ -290,7 +295,7 @@ def loadScores(f, d):
   '''
   rank = 'DKPCOFGS'
   unclass = 0.0  # 'unclassified' score
-  root = Node(None, 'root', '1', -1, -1, -1, -1) # root of tree
+  root = Node(None, 'root', '1', -1, -1, -1, -1, -1) # root of tree
   temp = root    # pointer to previous node
   score = []     # list of scores (read counts)
 
@@ -340,7 +345,7 @@ def loadScores(f, d):
     if spl[3] in 'GS' and name[0].isupper():
       name = '<i>' + name + '</i>'  # italicize genus/species
     n = Node(parent, name, spl[4], spl[0], spl[1], spl[5],
-      d[spl[4]][1])
+      d[spl[4]][1], d[spl[4]][2])
     parent.child.append(n)
     temp = n
 
