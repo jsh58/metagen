@@ -60,6 +60,6 @@ if [ -f $base2/DATE ]; then
 fi
 
 # select top 20 hits
-python /n/regal/informatics_public/metagen/centSumm2.py \
+python /n/regal/informatics_public/metagen/centSumm3.py \
   "$3.raw"  $tree  "$3"  20  $version  "$date"
 echo 'Output file: '$3
