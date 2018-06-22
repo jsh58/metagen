@@ -43,10 +43,24 @@ centrifuge \
 # produce taxonomy tree (if necessary)
 tree=$idx.tree
 if [ ! -f $tree ]; then
+
   centrifuge-inspect \
     --taxonomy-tree \
     $idx \
-    > $tree
+    > $tree.tmp
+
+  # add taxonomic summary to tree
+  if [[ ! -f acc2taxid.txt || ! -f $idx.fa ]]; then
+    echo 'Error! Cannot add summary to taxonomy tree'
+    exit -1
+  fi
+  python /n/regal/informatics_public/metagen/ntSumm.py \
+    acc2taxid.txt \
+    $tree.tmp \
+    $idx.fa \
+    $tree
+
+  rm $tree.tmp
 fi
 
 # determine versions of centrifuge, nt
