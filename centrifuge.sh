@@ -8,11 +8,16 @@
 
 module load centrifuge
 
-idx=/n/regal/informatics_public/metagen/nt
-
 if [ $# -lt 3 ]; then
-  echo 'Usage: bash -e centrifuge.sh  <R1>  <R2>  <out>'
-  echo '   OR: bash -e centrifuge.sh  <R1>  None  <out>  # for SE'
+  echo 'Usage: bash -e centrifuge.sh  <R1>  <R2>  <out>  [<idx>]  [<proc>]  ["mm"]'
+  echo '  Required arguments:'
+  echo '    <R1>      Input fastq file of R1 reads'
+  echo '    <R2>      Input fastq file of R2 reads; use "None" for SE reads'
+  echo '    <out>     Output html file'
+  echo '  Optional arguments:'
+  echo '    <idx>     Centrifuge index (def. /n/regal/informatics_public/metagen/nt)'
+  echo '    <proc>    Number of processors to use with centrifuge (def. 8)'
+  echo '    "mm"      Use memory-mapping option (--mm) with centrifuge'
   exit -1
 fi
 
@@ -28,11 +33,26 @@ else
   echo '  '$2
 fi
 
+# save optional args
+idx=/n/regal/informatics_public/metagen/nt
+if [ $# -gt 3 ]; then
+  idx=$4
+fi
+proc=8
+if [[ $# -gt 4 && $5 -gt 0 ]]; then
+  proc=$5
+fi
+mm=""
+if [[ $# -gt 5 && $6 = "mm" ]]; then
+  mm="--mm"
+fi
+
 # classify reads
 centrifuge \
-  -p8 \
+  -p $proc \
   -x $idx \
   $reads \
+  $mm \
   --no-abundance \
   --report-file /dev/null \
   | centrifuge-kreport \
