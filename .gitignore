@@ -10,6 +10,7 @@ nt.*.nhr
 nt.*.nin
 nt.*.nsq
 makeblastdb.log
+makeblastdb.perf
 DATE
 
 acc2taxid.txt
@@ -28,6 +29,7 @@ merged.dmp
 names.dmp
 nodes.dmp
 readme.txt
+log.txt
 
 nt.*.cf
 nt.tree
